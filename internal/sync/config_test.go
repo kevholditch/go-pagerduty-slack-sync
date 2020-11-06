@@ -60,6 +60,15 @@ func Test_NewConfigFromEnv_NoSchedulesDefined(t *testing.T) {
 	assert.Nil(t, config)
 }
 
+func Test_NewConfigFromEnv_InvalidScheduleData(t *testing.T) {
+	defer SetEnv("SCHEDULE_PLATFORM", "foo,bar,buzz")()
+
+	config, err := NewConfigFromEnv()
+
+	assert.Errorf(t, err, "expecting schedule value to be a comma separated scheduleId,name but got foo,bar,buzz")
+	assert.Nil(t, config)
+}
+
 func SetEnv(key, value string) func() {
 	_ = os.Setenv(key, value)
 	return func() {
