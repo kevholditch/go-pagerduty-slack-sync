@@ -36,10 +36,10 @@ func Test_NewConfigFromEnv_MultipleScheduleDefined(t *testing.T) {
 	assert.Equal(t, 3, len(config.Schedules))
 
 	assert.True(t, assert.ObjectsAreEqualValues([]Schedule{{
-			ScheduleId:             "1234",
-			AllOnCallGroupName:     "all-oncall-platform-engineers",
-			CurrentOnCallGroupName: "current-oncall-platform-engineer",
-		},
+		ScheduleId:             "1234",
+		AllOnCallGroupName:     "all-oncall-platform-engineers",
+		CurrentOnCallGroupName: "current-oncall-platform-engineer",
+	},
 		{
 			ScheduleId:             "abcd",
 			AllOnCallGroupName:     "all-oncall-core-engineers",
@@ -53,7 +53,6 @@ func Test_NewConfigFromEnv_MultipleScheduleDefined(t *testing.T) {
 		config.Schedules))
 }
 
-
 func Test_NewConfigFromEnv_NoSchedulesDefined(t *testing.T) {
 	config, err := NewConfigFromEnv()
 
@@ -61,7 +60,7 @@ func Test_NewConfigFromEnv_NoSchedulesDefined(t *testing.T) {
 	assert.Nil(t, config)
 }
 
-func SetEnv(key, value string) func () {
+func SetEnv(key, value string) func() {
 	_ = os.Setenv(key, value)
 	return func() {
 		_ = os.Unsetenv(key)
