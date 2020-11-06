@@ -8,10 +8,14 @@ import (
 
 func Test_NewConfigFromEnv_SingleScheduleDefined(t *testing.T) {
 	defer SetEnv("SCHEDULE_PLATFORM", "1234,platform-engineer")()
+	defer SetEnv("PAGERDUTY_TOKEN", "token1")()
+	defer SetEnv("SLACK_TOKEN", "secretToken1")()
 
 	config, err := NewConfigFromEnv()
 
 	assert.NoError(t, err)
+	assert.Equal(t, "token1", config.PagerDutyToken)
+	assert.Equal(t, "secretToken1", config.SlackToken)
 	assert.Equal(t, 1, len(config.Schedules))
 	assert.Equal(t, "1234", config.Schedules[0].ScheduleId)
 	assert.Equal(t, "all-oncall-platform-engineers", config.Schedules[0].AllOnCallGroupName)
@@ -26,12 +30,16 @@ func Test_NewConfigFromEnv_SingleScheduleDefined(t *testing.T) {
 }
 
 func Test_NewConfigFromEnv_MultipleScheduleDefined(t *testing.T) {
+	defer SetEnv("PAGERDUTY_TOKEN", "token1")()
+	defer SetEnv("SLACK_TOKEN", "secretToken1")()
 	defer SetEnv("SCHEDULE_PLATFORM", "1234,platform-engineer")()
 	defer SetEnv("SCHEDULE_CORE", "abcd,core-engineer")()
 	defer SetEnv("SCHEDULE_UK", "efghass,uk-engineer")()
 
 	config, err := NewConfigFromEnv()
 
+	assert.Equal(t, "token1", config.PagerDutyToken)
+	assert.Equal(t, "secretToken1", config.SlackToken)
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(config.Schedules))
 

@@ -6,10 +6,16 @@ import (
 	"strings"
 )
 
-const scheduleKeyPrefix = "SCHEDULE_"
+const (
+	scheduleKeyPrefix = "SCHEDULE_"
+	pagerDutyTokenKey = "PAGERDUTY_TOKEN"
+	slackTokenKey     = "SLACK_TOKEN"
+)
 
 type Config struct {
-	Schedules []Schedule
+	Schedules      []Schedule
+	PagerDutyToken string
+	SlackToken     string
 }
 
 type Schedule struct {
@@ -20,7 +26,10 @@ type Schedule struct {
 
 func NewConfigFromEnv() (*Config, error) {
 
-	config := &Config{}
+	config := &Config{
+		PagerDutyToken: os.Getenv(pagerDutyTokenKey),
+		SlackToken:     os.Getenv(slackTokenKey),
+	}
 
 	for _, key := range os.Environ() {
 		if strings.HasPrefix(key, scheduleKeyPrefix) {
