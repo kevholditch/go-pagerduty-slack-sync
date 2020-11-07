@@ -25,7 +25,7 @@ jobs:
           go get -u golang.org/x/lint/golint
 
       - name: Run build
-        run: go build ./cmd/pagerduty-slack-sync
+        run: env GOMODULE111=on go build ./cmd/pagerduty-slack-sync
 
       - name: Run vet & lint
         run: |
