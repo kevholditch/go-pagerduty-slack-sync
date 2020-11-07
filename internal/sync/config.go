@@ -12,18 +12,30 @@ const (
 	slackTokenKey     = "SLACK_TOKEN"
 )
 
+// Config is used to configure application
+// PagerDutyToken - token used to connect to pagerduty API
+// SlackToken - token used to connect to Slack API
 type Config struct {
 	Schedules      []Schedule
 	PagerDutyToken string
 	SlackToken     string
 }
 
+// Schedule models a PagerDuty schedule that will be synced with Slack
+// ScheduleID - PagerDuty schedule id to sync
+// AllOnCallGroupName - Slack group name for all members of schedule
+// CurrentOnCallGroupName - Slack group name for current person on call
 type Schedule struct {
-	ScheduleId             string
+	ScheduleID             string
 	AllOnCallGroupName     string
 	CurrentOnCallGroupName string
 }
 
+// NewConfigFromEnv is a function to generate a config from env varibles
+// PAGERDUTY_TOKEN - PagerDuty Token
+// SLACK_TOKEN - Slack Token
+// SCHEDULE_XXX="id,name" e.g. 1234,platform-engineer will generate a schedule with the following values
+// ScheduleID = "1234", AllOnCallGroupName = "all-oncall-platform-engineers", CurrentOnCallGroupName: "current-oncall-platform-engineer"
 func NewConfigFromEnv() (*Config, error) {
 
 	config := &Config{
@@ -39,7 +51,7 @@ func NewConfigFromEnv() (*Config, error) {
 				return nil, fmt.Errorf("expecting schedule value to be a comma separated scheduleId,name but got %s", value)
 			}
 			config.Schedules = append(config.Schedules, Schedule{
-				ScheduleId:             scheduleValues[0],
+				ScheduleID:             scheduleValues[0],
 				AllOnCallGroupName:     fmt.Sprintf("all-oncall-%ss", scheduleValues[1]),
 				CurrentOnCallGroupName: fmt.Sprintf("current-oncall-%s", scheduleValues[1]),
 			})
