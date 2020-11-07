@@ -1,4 +1,4 @@
-package pagerduty_slack_sync_lambda
+package main
 
 import (
 	"fmt"
