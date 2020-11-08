@@ -21,19 +21,7 @@ jobs:
           go-version: '1.15.x'
 
       - name: Install dependencies
-        run: |
-          go get -u golang.org/x/lint/golint
-
-      - name: Run build
-        run: env GOMODULE111=on go build ./cmd/pagerduty-slack-sync
-
-      - name: Run vet & lint
-        run: |
-          go vet -v ./...
-          golint ./...
-
-      - name: Test
-        run: go test -v ./...
+        run: make ci
 
 
 #  # The "deploy" workflow
