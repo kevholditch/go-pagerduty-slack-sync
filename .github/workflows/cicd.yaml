@@ -20,7 +20,7 @@ jobs:
         with:
           go-version: '1.15.x'
 
-      - name: Install dependencies
+      - name: CI
         run: make ci
 
 
