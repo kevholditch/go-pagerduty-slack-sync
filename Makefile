@@ -1,6 +1,4 @@
 
-
-
 build:
 	@env GOMODULE111=on find ./cmd/* -maxdepth 1 -type d -exec go build "{}" \;
 
