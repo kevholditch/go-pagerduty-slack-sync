@@ -9,7 +9,7 @@ import (
 type slackClient struct {
 	users      []slack.User
 	userGroups []slack.UserGroup
-	client     *slack.Client
+	Client     *slack.Client
 }
 
 func newSlackClient(token string) (*slackClient, error) {
@@ -25,10 +25,15 @@ func newSlackClient(token string) (*slackClient, error) {
 		return nil, err
 	}
 
+	fmt.Printf("listing users...")
+	for _, user := range users {
+		fmt.Printf("ID: %s, Name: %s, Email: %s\n", user.ID, user.Name, user.Profile.Email)
+	}
+
 	return &slackClient{
 		users:      users,
 		userGroups: userGroups,
-		client:     s,
+		Client:     s,
 	}, nil
 }
 
@@ -38,7 +43,7 @@ func (s *slackClient) createOrGetUserGroup(name string) (*slack.UserGroup, error
 		return group, nil
 	}
 
-	g, err := s.client.CreateUserGroup(slack.UserGroup{
+	g, err := s.Client.CreateUserGroup(slack.UserGroup{
 		Name: name,
 	})
 	if err != nil {

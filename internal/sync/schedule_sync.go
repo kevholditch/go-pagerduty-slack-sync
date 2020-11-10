@@ -1,7 +1,9 @@
 package sync
 
 import (
-	"fmt"
+	"github.com/kevholditch/go-pagerduty-slack-sync/internal/compare"
+	"github.com/sirupsen/logrus"
+	"strings"
 )
 
 // Schedules does the sync
@@ -13,35 +15,55 @@ func Schedules(config *Config) error {
 	}
 	p := newPagerDutyClient(config.PagerDutyToken)
 
-	for _, schedule := range config.Schedules {
-
-		emails, err := p.getEmailsOfOnCallForSchedule(schedule.ScheduleID)
-		if err != nil {
-			return err
-		}
+	updateSchedule := func(emails []string, groupName string) error {
 		slackIDs, err := s.getSlackIDsFromEmails(emails)
 		if err != nil {
 			return err
 		}
-		for _, ID := range slackIDs {
-			fmt.Printf("%s\n", ID)
+
+		userGroup, err := s.createOrGetUserGroup(groupName)
+		if err != nil {
+			return err
+		}
+		members, err := s.Client.GetUserGroupMembers(userGroup.ID)
+		if err != nil {
+			return err
+		}
+
+		if !compare.Array(slackIDs, members) {
+			logrus.Infof("member list %s needs updating...", groupName)
+			_, err = s.Client.UpdateUserGroupMembers(userGroup.ID, strings.Join(slackIDs, ","))
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	for _, schedule := range config.Schedules {
+		logrus.Infof("checking slack group: %s", schedule.CurrentOnCallGroupName)
+		emails, err := p.getEmailsOfCurrentOnCallForSchedule(schedule.ScheduleID)
+		if err != nil {
+			return err
+		}
+
+		err = updateSchedule(emails, schedule.CurrentOnCallGroupName)
+		if err != nil {
+			return err
+		}
+
+		logrus.Infof("checking slack group: %s", schedule.AllOnCallGroupName)
+		emails, err = p.getEmailsOfAllOnCallForSchedule(schedule.ScheduleID)
+		if err != nil {
+			return err
+		}
+
+		err = updateSchedule(emails, schedule.AllOnCallGroupName)
+		if err != nil {
+			return err
 		}
 
 	}
-
-	//group, err := s.createOrGetUserGroup(schedule.CurrentOnCallGroupName)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//members, err := s.GetUserGroupMembers(schedule.CurrentOnCallGroupName)
-	//
-	//fmt.Printf("%v+", members)
-	//
-	//_, err = s.UpdateUserGroupMembers(groupID,"U53FWU333")
-	//if err != nil {
-	//	return err
-	//}
 
 	return nil
 }
