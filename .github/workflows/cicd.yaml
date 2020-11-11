@@ -40,4 +40,10 @@ jobs:
       - name: Push the tagged Docker image
         run: docker push  kevholditch/pagerduty-slack-sync:${{steps.vars.outputs.tag}}
 
+      - name: Tag latest
+        run: docker tag kevholditch/pagerduty-slack-sync:${{steps.vars.outputs.tag}} kevholditch/pagerduty-slack-sync:latest
+
+      - name: Push the latest Docker image
+        run: docker push kevholditch/pagerduty-slack-sync:latest
+
 
