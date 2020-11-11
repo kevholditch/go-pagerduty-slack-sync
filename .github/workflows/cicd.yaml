@@ -34,6 +34,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: kevholditch/pagerduty-slack-sync
           tag_with_ref: true
+          push: true
           file: ./build/package/Dockerfile
 
 
