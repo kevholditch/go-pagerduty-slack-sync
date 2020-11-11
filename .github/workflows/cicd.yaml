@@ -27,7 +27,7 @@ jobs:
       - name: print
         run: echo "GITHUB_REF_NAME=${GITHUB_REF_NAME} GITHUB_REF_SLUG=${GITHUB_REF_SLUG} GITHUB_REF=${GITHUB_REF}"
       - name: CI
-        run: env TAG=${GITHUB_REF_NAME}  make ci
+        run: env TAG=$(echo ${GITHUB_REF} | tr / -)  make ci
 
       - name: Deploy to Docker registry
         uses: docker/build-push-action@v1
