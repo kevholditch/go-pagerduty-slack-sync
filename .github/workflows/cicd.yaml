@@ -26,8 +26,6 @@ jobs:
 #
 #      - name: CI
 #        run: env TAG=$(echo ${GITHUB_REF} | cut -d '/' -f3)  make ci
-      - name: Setup Tag
-        run: echo "TAG=$(echo ${GITHUB_REF} | cut -d '/' -f3)" >> $GITHUB_ENV
 
       - name: Deploy to Docker registry
         uses: docker/build-push-action@v1
@@ -36,7 +34,6 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: kevholditch/pagerduty-slack-sync
           tag_with_ref: true
-          tags: ${TAG}
           file: ./build/package/Dockerfile
 
 
