@@ -39,7 +39,7 @@ func (s *slackClient) createOrGetUserGroup(name string) (*slack.UserGroup, error
 	}
 
 	g, err := s.Client.CreateUserGroup(slack.UserGroup{
-		Name: name,
+		Name:   name,
 		Handle: name,
 	})
 	if err != nil {

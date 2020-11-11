@@ -3,22 +3,26 @@ package sync
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
 const (
-	scheduleKeyPrefix = "SCHEDULE_"
-	pagerDutyTokenKey = "PAGERDUTY_TOKEN"
-	slackTokenKey     = "SLACK_TOKEN"
+	scheduleKeyPrefix  = "SCHEDULE_"
+	pagerDutyTokenKey  = "PAGERDUTY_TOKEN"
+	slackTokenKey      = "SLACK_TOKEN"
+	runInterval        = "RUN_INTERVAL_SECONDS"
+	runIntervalDefault = 60
 )
 
 // Config is used to configure application
 // PagerDutyToken - token used to connect to pagerduty API
 // SlackToken - token used to connect to Slack API
 type Config struct {
-	Schedules      []Schedule
-	PagerDutyToken string
-	SlackToken     string
+	Schedules            []Schedule
+	PagerDutyToken       string
+	SlackToken           string
+	RunIntervalInSeconds int
 }
 
 // Schedule models a PagerDuty schedule that will be synced with Slack
@@ -39,8 +43,15 @@ type Schedule struct {
 func NewConfigFromEnv() (*Config, error) {
 
 	config := &Config{
-		PagerDutyToken: os.Getenv(pagerDutyTokenKey),
-		SlackToken:     os.Getenv(slackTokenKey),
+		PagerDutyToken:       os.Getenv(pagerDutyTokenKey),
+		SlackToken:           os.Getenv(slackTokenKey),
+		RunIntervalInSeconds: runIntervalDefault,
+	}
+
+	runInterval := os.Getenv(runInterval)
+	v, err := strconv.Atoi(runInterval)
+	if err == nil {
+		config.RunIntervalInSeconds = v
 	}
 
 	for _, key := range os.Environ() {

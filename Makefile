@@ -21,7 +21,6 @@ test:
 	@go test -v ./...
 
 docker-build:
-	@echo ${TAG}
 	@docker build -t kevholditch/pagerduty-slack-sync:${TAG} -f build/package/Dockerfile .
 
 docker-publish:
