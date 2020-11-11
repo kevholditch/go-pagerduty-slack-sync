@@ -27,7 +27,7 @@ jobs:
 #      - name: CI
 #        run: env TAG=$(echo ${GITHUB_REF} | cut -d '/' -f3)  make ci
       - name: Setup Tag
-        run: export TAG=$(echo ${GITHUB_REF} | cut -d '/' -f3)
+        run: echo "::set-env name=APP_NAME::$(echo ${GITHUB_REF} | cut -d '/' -f3)"
 
       - name: Deploy to Docker registry
         uses: docker/build-push-action@v1
