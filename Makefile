@@ -21,6 +21,7 @@ test:
 	@go test -v ./...
 
 docker-build:
+	@echo ${tag}
 	@docker build -t kevholditch/pagerduty-slack-sync:${tag} -f build/package/Dockerfile .
 
 ci: install-deps build check test docker-build
