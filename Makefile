@@ -1,4 +1,6 @@
 
+tag := $$(git describe --abbrev=0 --tags)
+
 build:
 	@env GOMODULE111=on find ./cmd/* -maxdepth 1 -type d -exec go build "{}" \;
 
@@ -19,8 +21,8 @@ test:
 	@go test -v ./...
 
 docker-build:
-	docker build -t kevholditch/pagerduty-slack-sync:1.0.0 -f build/package/Dockerfile .
+	@docker build -t kevholditch/pagerduty-slack-sync:${tag} -f build/package/Dockerfile .
 
-ci: install-deps build check test
+ci: install-deps build check test docker-build
 
 .PHONY: build install-deps install-lint lint vet check test
