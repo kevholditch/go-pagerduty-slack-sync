@@ -9,6 +9,7 @@ import (
 // Schedules does the sync
 func Schedules(config *Config) error {
 
+	logrus.Infof("running schedule sync...")
 	s, err := newSlackClient(config.SlackToken)
 	if err != nil {
 		return err
