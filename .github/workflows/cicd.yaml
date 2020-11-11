@@ -25,7 +25,7 @@ jobs:
           go-version: '1.15.x'
 
       - name: print
-        run: echo "GITHUB_REF_NAME=${GITHUB_REF_NAME} GITHUB_REF_SLUG=${GITHUB_REF_SLUG}"
+        run: echo "GITHUB_REF_NAME=${GITHUB_REF_NAME} GITHUB_REF_SLUG=${GITHUB_REF_SLUG} GITHUB_REF=${GITHUB_REF}"
       - name: CI
         run: env TAG=${GITHUB_REF_NAME}  make ci
 
