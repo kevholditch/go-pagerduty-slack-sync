@@ -1,5 +1,5 @@
 
-tag := $$(git describe --abbrev=0 --tags)
+tag := $$(git describe --tags)
 
 build:
 	@env GOMODULE111=on find ./cmd/* -maxdepth 1 -type d -exec go build "{}" \;
