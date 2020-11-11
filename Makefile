@@ -18,6 +18,9 @@ check: lint vet
 test:
 	@go test -v ./...
 
+docker-build:
+	docker build -t kevholditch/pagerduty-slack-sync:1.0.0 -f build/package/Dockerfile .
+
 ci: install-deps build check test
 
 .PHONY: build install-deps install-lint lint vet check test

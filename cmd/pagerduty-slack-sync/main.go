@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/kevholditch/go-pagerduty-slack-sync/internal/sync"
+	"github.com/sirupsen/logrus"
 	"os"
 )
 
@@ -10,14 +10,14 @@ func main() {
 
 	config, err := sync.NewConfigFromEnv()
 	if err != nil {
-		fmt.Printf("could not parse config, error: %v", err)
+		logrus.Errorf("could not parse config, error: %v", err)
 		os.Exit(-1)
 		return
 	}
 
 	err = sync.Schedules(config)
 	if err != nil {
-		fmt.Printf("could not sync schdules, error: %v", err)
+		logrus.Errorf("could not sync schedules, error: %v", err)
 		os.Exit(-1)
 		return
 	}

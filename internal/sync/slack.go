@@ -25,11 +25,6 @@ func newSlackClient(token string) (*slackClient, error) {
 		return nil, err
 	}
 
-	fmt.Printf("listing users...")
-	for _, user := range users {
-		fmt.Printf("ID: %s, Name: %s, Email: %s\n", user.ID, user.Name, user.Profile.Email)
-	}
-
 	return &slackClient{
 		users:      users,
 		userGroups: userGroups,
@@ -45,6 +40,7 @@ func (s *slackClient) createOrGetUserGroup(name string) (*slack.UserGroup, error
 
 	g, err := s.Client.CreateUserGroup(slack.UserGroup{
 		Name: name,
+		Handle: name,
 	})
 	if err != nil {
 		return nil, err

@@ -2,6 +2,10 @@ module github.com/kevholditch/go-pagerduty-slack-sync
 
 go 1.15
 
+//replace (
+//	github.com/kevholditch/go-pagerduty-slack-sync/ => ./
+//)
+
 require (
 	github.com/PagerDuty/go-pagerduty v1.3.0
 	github.com/pkg/errors v0.9.1 // indirect
