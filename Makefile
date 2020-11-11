@@ -24,6 +24,9 @@ docker-build:
 	@echo ${TAG}
 	@docker build -t kevholditch/pagerduty-slack-sync:${TAG} -f build/package/Dockerfile .
 
-ci: install-deps build check test docker-build
+docker-publish:
+	@docker login
+
+ci: install-deps build check test
 
 .PHONY: build install-deps install-lint lint vet check test
