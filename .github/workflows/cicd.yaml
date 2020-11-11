@@ -27,14 +27,24 @@ jobs:
 #      - name: CI
 #        run: env TAG=$(echo ${GITHUB_REF} | cut -d '/' -f3)  make ci
 
-      - name: Deploy to Docker registry
-        uses: docker/build-push-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: kevholditch/pagerduty-slack-sync
-          tag_with_ref: true
-          push: true
-          file: ./build/package/Dockerfile
+#      - name: Deploy to Docker registry
+#        uses: docker/build-push-action@v2
+#        with:
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#          repository: kevholditch/pagerduty-slack-sync
+#          tag_with_ref: true
+#          push: true
+#          file: ./build/package/Dockerfile
+
+      - name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+      - name: Get the version
+        id: vars
+        run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
+      - name: Build the tagged Docker image
+        run: docker build . --file ./build/package/Dockerfile --tag kevholditch/pagerduty-slack-sync:${{steps.vars.outputs.tag}}
+      - name: Push the tagged Docker image
+        run: docker push  kevholditch/pagerduty-slack-sync:${{steps.vars.outputs.tag}}
 
 
