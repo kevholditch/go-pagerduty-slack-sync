@@ -24,3 +24,33 @@ The following slack groups would be created:
 Multiple schedules can be synced at once by passing many env variables beginning with `SCHEDULE_`.  The format for the value that the schedule parameter expects is `<pagerduty schedule id>/<group-name>`.  The `<group name>` will be used to build the two names for the slack groups using the following format:
     - `all-oncall-<group-name>s`
     - `current-oncall-<group-name>`
+    
+Full parameter list:
+
+| Env Name              | Description                                | Default Value  | Example                 |
+|:----------------------|:-------------------------------------------|:---------------|:------------------------|
+| PAGERDUTY_TOKEN       | Token used to talk to the PagerDuty API    | n/a            | xxxxx                   | 
+| SLACK_TOKEN           | Token used to talk to Slack API            | n/a            | xoxp-xxxxxx             |
+| SCHEDULE_<NAME>       | A PagerDuty schedule that you want to sync | n/a            | 1234,platform-engineer  |
+| RUN_INTERVAL_SECONDS  | Run a sync every X seconds                 | 60             | 300                     |
+
+
+## Slack permissions
+
+In order for the app to run you will need to create a bot with the following permissions:
+```
+usergroups:read
+usergroups:write
+users:read
+users:read.email
+```
+
+If you have locked down your slack so only the admins can create groups then you have two options.  You can either create the slack groups up front and the app will use those or you can give the bot user auth and give it admin perssions:
+```
+admin.usergroups:read
+admin.usergroups:write
+usergroups:read
+usergroups:write
+users:read
+users:read.email
+```
