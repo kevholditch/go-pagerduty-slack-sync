@@ -1,4 +1,8 @@
-# go-pagerduty-slack-sync
+<p align="center">
+  <img src="./synclogo.png">
+</p>
+
+
 
 This tool syncs one or more pagerduty schedules to two slack groups per schedule.  The first slack group is a group with everyone who is in the pagerduty schedule and the second contains the current person on call.
 
