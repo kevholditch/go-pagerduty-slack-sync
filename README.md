@@ -31,12 +31,13 @@ Multiple schedules can be synced at once by passing many env variables beginning
     
 Full parameter list:
 
-| Env Name              | Description                                | Default Value  | Example                 |
-|:----------------------|:-------------------------------------------|:---------------|:------------------------|
-| PAGERDUTY_TOKEN       | Token used to talk to the PagerDuty API    | n/a            | xxxxx                   | 
-| SLACK_TOKEN           | Token used to talk to Slack API            | n/a            | xoxp-xxxxxx             |
-| SCHEDULE_<NAME>       | A PagerDuty schedule that you want to sync | n/a            | 1234,platform-engineer  |
-| RUN_INTERVAL_SECONDS  | Run a sync every X seconds                 | 60             | 300                     |
+| Env Name                     | Description                                                                       | Default Value  | Example                 |
+|:-----------------------------|:----------------------------------------------------------------------------------|:---------------|:------------------------|
+| PAGERDUTY_TOKEN              | Token used to talk to the PagerDuty API                                           | n/a            | xxxxx                   |
+| SLACK_TOKEN                  | Token used to talk to Slack API                                                   | n/a            | xoxp-xxxxxx             |
+| SCHEDULE_<NAME>              | A PagerDuty schedule that you want to sync                                        | n/a            | 1234,platform-engineer  |
+| RUN_INTERVAL_SECONDS         | Run a sync every X seconds                                                        | 60             | 300                     |
+| PAGERDUTY_SCHEDULE_LOOKAHEAD | How far into the future to evaluate Pagerduty schedules (Go time duration format) | 2400h          | 8760h                   |
 
 
 ## Slack permissions

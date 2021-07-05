@@ -1,9 +1,10 @@
 package sync
 
 import (
+	"strings"
+
 	"github.com/kevholditch/go-pagerduty-slack-sync/internal/compare"
 	"github.com/sirupsen/logrus"
-	"strings"
 )
 
 // Schedules does the sync
@@ -54,7 +55,7 @@ func Schedules(config *Config) error {
 		}
 
 		logrus.Infof("checking slack group: %s", schedule.AllOnCallGroupName)
-		emails, err = p.getEmailsOfAllOnCallForSchedule(schedule.ScheduleID)
+		emails, err = p.getEmailsOfAllOnCallForSchedule(schedule.ScheduleID, config.PagerdutyScheduleLookahead)
 		if err != nil {
 			return err
 		}
