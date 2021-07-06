@@ -1,8 +1,9 @@
 package sync
 
 import (
-	"github.com/PagerDuty/go-pagerduty"
 	"time"
+
+	"github.com/PagerDuty/go-pagerduty"
 )
 
 type pagerDutyClient struct {
@@ -15,10 +16,10 @@ func newPagerDutyClient(token string) *pagerDutyClient {
 	}
 }
 
-func (p *pagerDutyClient) getEmailsOfAllOnCallForSchedule(ID string) ([]string, error) {
+func (p *pagerDutyClient) getEmailsOfAllOnCallForSchedule(ID string, lookahead time.Duration) ([]string, error) {
 	users, err := p.client.ListOnCallUsers(ID, pagerduty.ListOnCallUsersOptions{
 		Since: time.Now().UTC().Format(time.RFC3339),
-		Until: time.Now().UTC().Add(time.Hour * 24 * 100).Format(time.RFC3339),
+		Until: time.Now().UTC().Add(lookahead).Format(time.RFC3339),
 	})
 	if err != nil {
 		return nil, err

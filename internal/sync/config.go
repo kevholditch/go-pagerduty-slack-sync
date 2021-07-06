@@ -5,24 +5,27 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
-	scheduleKeyPrefix  = "SCHEDULE_"
-	pagerDutyTokenKey  = "PAGERDUTY_TOKEN"
-	slackTokenKey      = "SLACK_TOKEN"
-	runInterval        = "RUN_INTERVAL_SECONDS"
-	runIntervalDefault = 60
+	scheduleKeyPrefix      = "SCHEDULE_"
+	pagerDutyTokenKey      = "PAGERDUTY_TOKEN"
+	slackTokenKey          = "SLACK_TOKEN"
+	runInterval            = "RUN_INTERVAL_SECONDS"
+	pdScheduleLookaheadKey = "PAGERDUTY_SCHEDULE_LOOKAHEAD"
+	runIntervalDefault     = 60
 )
 
 // Config is used to configure application
 // PagerDutyToken - token used to connect to pagerduty API
 // SlackToken - token used to connect to Slack API
 type Config struct {
-	Schedules            []Schedule
-	PagerDutyToken       string
-	SlackToken           string
-	RunIntervalInSeconds int
+	Schedules                  []Schedule
+	PagerDutyToken             string
+	SlackToken                 string
+	RunIntervalInSeconds       int
+	PagerdutyScheduleLookahead time.Duration
 }
 
 // Schedule models a PagerDuty schedule that will be synced with Slack
@@ -41,7 +44,6 @@ type Schedule struct {
 // SCHEDULE_XXX="id,name" e.g. 1234,platform-engineer will generate a schedule with the following values
 // ScheduleID = "1234", AllOnCallGroupName = "all-oncall-platform-engineers", CurrentOnCallGroupName: "current-oncall-platform-engineer"
 func NewConfigFromEnv() (*Config, error) {
-
 	config := &Config{
 		PagerDutyToken:       os.Getenv(pagerDutyTokenKey),
 		SlackToken:           os.Getenv(slackTokenKey),
@@ -53,6 +55,12 @@ func NewConfigFromEnv() (*Config, error) {
 	if err == nil {
 		config.RunIntervalInSeconds = v
 	}
+
+	pagerdutyScheduleLookahead, err := getPagerdutyScheduleLookahead()
+	if err != nil {
+		return nil, err
+	}
+	config.PagerdutyScheduleLookahead = pagerdutyScheduleLookahead
 
 	for _, key := range os.Environ() {
 		if strings.HasPrefix(key, scheduleKeyPrefix) {
@@ -74,4 +82,20 @@ func NewConfigFromEnv() (*Config, error) {
 	}
 
 	return config, nil
+}
+
+func getPagerdutyScheduleLookahead() (time.Duration, error) {
+	result := time.Hour * 24 * 100
+
+	pdScheduleLookahead, ok := os.LookupEnv(pdScheduleLookaheadKey)
+	if !ok {
+		return result, nil
+	}
+
+	v, err := time.ParseDuration(pdScheduleLookahead)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse %s as time.Duration: %w", pdScheduleLookahead, err)
+	}
+
+	return v, nil
 }
