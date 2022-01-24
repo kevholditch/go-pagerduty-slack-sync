@@ -8,5 +8,6 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/slack-go/slack v0.7.2
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f // indirect
+	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
+	golang.org/x/tools v0.1.8 // indirect
 )
