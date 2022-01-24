@@ -9,12 +9,14 @@ import (
 )
 
 const (
-	scheduleKeyPrefix      = "SCHEDULE_"
-	pagerDutyTokenKey      = "PAGERDUTY_TOKEN"
-	slackTokenKey          = "SLACK_TOKEN"
-	runInterval            = "RUN_INTERVAL_SECONDS"
-	pdScheduleLookaheadKey = "PAGERDUTY_SCHEDULE_LOOKAHEAD"
-	runIntervalDefault     = 60
+	scheduleKeyPrefix        = "SCHEDULE_"
+	pluralizeAllOnCallGroup  = "PLURALIZE_ALL_ONCALL_GROUP"
+	currentOnCallGroupPrefix = "CURRENT_ALL_ONCALL_GROUP_PREFIX"
+	pagerDutyTokenKey        = "PAGERDUTY_TOKEN"
+	slackTokenKey            = "SLACK_TOKEN"
+	runInterval              = "RUN_INTERVAL_SECONDS"
+	pdScheduleLookaheadKey   = "PAGERDUTY_SCHEDULE_LOOKAHEAD"
+	runIntervalDefault       = 60
 )
 
 // Config is used to configure application
@@ -22,6 +24,8 @@ const (
 // SlackToken - token used to connect to Slack API
 type Config struct {
 	Schedules                  []Schedule
+	PluralizeAllOnCallGroup    bool
+	CurrentOnCallGroupPrefix   string
 	PagerDutyToken             string
 	SlackToken                 string
 	RunIntervalInSeconds       int
@@ -50,6 +54,22 @@ func NewConfigFromEnv() (*Config, error) {
 		RunIntervalInSeconds: runIntervalDefault,
 	}
 
+	pluralizeStr, ok := os.LookupEnv(pluralizeAllOnCallGroup)
+	if !ok {
+	    pluralizeStr = "true"
+	}
+	pluralize, err := strconv.ParseBool(pluralizeStr)
+	if err != nil {
+	    return nil, fmt.Errorf("failed to parse %s as bool: %w", pluralizeAllOnCallGroup, err)
+	}
+	config.PluralizeAllOnCallGroup = pluralize
+
+	currentGroupPrefix, ok := os.LookupEnv(currentOnCallGroupPrefix)
+	if !ok {
+	    currentGroupPrefix = "current-"
+	}
+	config.CurrentOnCallGroupPrefix = currentGroupPrefix
+
 	runInterval := os.Getenv(runInterval)
 	v, err := strconv.Atoi(runInterval)
 	if err == nil {
@@ -69,11 +89,22 @@ func NewConfigFromEnv() (*Config, error) {
 			if len(scheduleValues) != 2 {
 				return nil, fmt.Errorf("expecting schedule value to be a comma separated scheduleId,name but got %s", value)
 			}
-			config.Schedules = append(config.Schedules, Schedule{
+
+			schedule := Schedule{
 				ScheduleID:             scheduleValues[0],
-				AllOnCallGroupName:     fmt.Sprintf("all-oncall-%ss", scheduleValues[1]),
-				CurrentOnCallGroupName: fmt.Sprintf("current-oncall-%s", scheduleValues[1]),
-			})
+				AllOnCallGroupName:     fmt.Sprintf("all-oncall-%s", scheduleValues[1]),
+				CurrentOnCallGroupName: fmt.Sprintf("oncall-%s", scheduleValues[1]),
+			}
+
+			if config.PluralizeAllOnCallGroup {
+			    schedule.AllOnCallGroupName += "s"
+			}
+
+			if config.CurrentOnCallGroupPrefix != "" {
+			    schedule.CurrentOnCallGroupName = config.CurrentOnCallGroupPrefix + schedule.CurrentOnCallGroupName
+			}
+
+			config.Schedules = append(config.Schedules, schedule)
 		}
 	}
 
