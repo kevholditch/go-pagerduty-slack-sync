@@ -29,13 +29,11 @@ type Config struct {
 }
 
 // Schedule models a PagerDuty schedule that will be synced with Slack
-// ScheduleID - PagerDuty schedule id to sync
+// ScheduleIDs - All PagerDuty schedule ID's to sync
 // AllOnCallGroupName - Slack group name for all members of schedule
-// ScheduleGroup - All PagerDuty schedule ID's to sync
 // CurrentOnCallGroupName - Slack group name for current person on call
 type Schedule struct {
-	ScheduleID             string
-	ScheduleGroup          []string
+	ScheduleIDs            []string
 	AllOnCallGroupName     string
 	CurrentOnCallGroupName string
 }
@@ -99,8 +97,7 @@ func appendSchedule(schedules []Schedule, scheduleID, teamName string) []Schedul
 		updated = true
 
 		newScheduleList[i] = Schedule{
-			ScheduleID:             "",
-			ScheduleGroup:          append(s.ScheduleGroup, scheduleID),
+			ScheduleIDs:            append(s.ScheduleIDs, scheduleID),
 			AllOnCallGroupName:     allGroupName,
 			CurrentOnCallGroupName: currentGroupName,
 		}
@@ -108,8 +105,7 @@ func appendSchedule(schedules []Schedule, scheduleID, teamName string) []Schedul
 
 	if !updated {
 		newScheduleList = append(newScheduleList, Schedule{
-			ScheduleID:             scheduleID,
-			ScheduleGroup:          []string{scheduleID},
+			ScheduleIDs:            []string{scheduleID},
 			AllOnCallGroupName:     allGroupName,
 			CurrentOnCallGroupName: currentGroupName,
 		})

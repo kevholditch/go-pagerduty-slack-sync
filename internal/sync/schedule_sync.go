@@ -60,7 +60,7 @@ func Schedules(config *Config) error {
 	for _, schedule := range config.Schedules {
 		logrus.Infof("checking slack group: %s", schedule.CurrentOnCallGroupName)
 
-		currentOncallEngineerEmails, err := getEmailsForSchedules(schedule.ScheduleGroup, time.Second)
+		currentOncallEngineerEmails, err := getEmailsForSchedules(schedule.ScheduleIDs, time.Second)
 		if err != nil {
 			return err
 		}
@@ -72,7 +72,7 @@ func Schedules(config *Config) error {
 
 		logrus.Infof("checking slack group: %s", schedule.AllOnCallGroupName)
 
-		allOncallEngineerEmails, err := getEmailsForSchedules(schedule.ScheduleGroup, config.PagerdutyScheduleLookahead)
+		allOncallEngineerEmails, err := getEmailsForSchedules(schedule.ScheduleIDs, config.PagerdutyScheduleLookahead)
 		if err != nil {
 			return err
 		}
