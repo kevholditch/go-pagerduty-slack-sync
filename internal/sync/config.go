@@ -71,11 +71,8 @@ func NewConfigFromEnv() (*Config, error) {
 			if len(scheduleValues) != 2 {
 				return nil, fmt.Errorf("expecting schedule value to be a comma separated scheduleId,name but got %s", value)
 			}
-			config.Schedules = append(config.Schedules, Schedule{
-				ScheduleID:             scheduleValues[0],
-				AllOnCallGroupName:     fmt.Sprintf("all-oncall-%ss", scheduleValues[1]),
-				CurrentOnCallGroupName: fmt.Sprintf("current-oncall-%s", scheduleValues[1]),
-			})
+
+			config.Schedules = appendSchedule(config.Schedules, scheduleValues[0], scheduleValues[1])
 		}
 	}
 
@@ -84,6 +81,41 @@ func NewConfigFromEnv() (*Config, error) {
 	}
 
 	return config, nil
+}
+
+func appendSchedule(schedules []Schedule, scheduleID, teamName string) []Schedule {
+	currentGroupName := fmt.Sprintf("current-oncall-%s", teamName)
+	allGroupName := fmt.Sprintf("all-oncall-%ss", teamName)
+	newScheduleList := make([]Schedule, len(schedules))
+	updated := false
+
+	for i, s := range schedules {
+		if s.CurrentOnCallGroupName != currentGroupName {
+			newScheduleList[i] = s
+
+			continue
+		}
+
+		updated = true
+
+		newScheduleList[i] = Schedule{
+			ScheduleID:             "",
+			ScheduleGroup:          append(s.ScheduleGroup, scheduleID),
+			AllOnCallGroupName:     allGroupName,
+			CurrentOnCallGroupName: currentGroupName,
+		}
+	}
+
+	if !updated {
+		newScheduleList = append(newScheduleList, Schedule{
+			ScheduleID:             scheduleID,
+			ScheduleGroup:          []string{scheduleID},
+			AllOnCallGroupName:     allGroupName,
+			CurrentOnCallGroupName: currentGroupName,
+		})
+	}
+
+	return newScheduleList
 }
 
 func getPagerdutyScheduleLookahead() (time.Duration, error) {
