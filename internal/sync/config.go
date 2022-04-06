@@ -31,9 +31,11 @@ type Config struct {
 // Schedule models a PagerDuty schedule that will be synced with Slack
 // ScheduleID - PagerDuty schedule id to sync
 // AllOnCallGroupName - Slack group name for all members of schedule
+// ScheduleGroup - All PagerDuty schedule ID's to sync
 // CurrentOnCallGroupName - Slack group name for current person on call
 type Schedule struct {
 	ScheduleID             string
+	ScheduleGroup          []string
 	AllOnCallGroupName     string
 	CurrentOnCallGroupName string
 }

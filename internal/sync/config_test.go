@@ -98,11 +98,12 @@ func Test_NewConfigFromEnv_MultipleScheduleDefined(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(config.Schedules))
 
-	assert.True(t, assert.ObjectsAreEqualValues([]Schedule{{
-		ScheduleID:             "1234",
-		AllOnCallGroupName:     "all-oncall-platform-engineers",
-		CurrentOnCallGroupName: "current-oncall-platform-engineer",
-	},
+	assert.True(t, assert.ObjectsAreEqualValues([]Schedule{
+		{
+			ScheduleID:             "1234",
+			AllOnCallGroupName:     "all-oncall-platform-engineers",
+			CurrentOnCallGroupName: "current-oncall-platform-engineer",
+		},
 		{
 			ScheduleID:             "abcd",
 			AllOnCallGroupName:     "all-oncall-core-engineers",
@@ -112,8 +113,33 @@ func Test_NewConfigFromEnv_MultipleScheduleDefined(t *testing.T) {
 			ScheduleID:             "efghass",
 			AllOnCallGroupName:     "all-oncall-uk-engineers",
 			CurrentOnCallGroupName: "current-oncall-uk-engineer",
-		}},
+		},
+	},
 		config.Schedules))
+}
+
+func Test_NewConfigFromEnv_WithScheduleGroups(t *testing.T) {
+	defer SetEnv("PAGERDUTY_TOKEN", "token1")()
+	defer SetEnv("SLACK_TOKEN", "secretToken1")()
+	defer SetEnv("SCHEDULE_CORE_1", "aaaa,core-engineer")()
+	defer SetEnv("SCHEDULE_CORE_2", "bbbb,core-engineer")()
+	defer SetEnv("SCHEDULE_CORE_3", "cccc,core-engineer")()
+
+	config, err := NewConfigFromEnv()
+
+	assert.Equal(t, "token1", config.PagerDutyToken)
+	assert.Equal(t, "secretToken1", config.SlackToken)
+	assert.NoError(t, err)
+	assert.Equal(t, 3, len(config.Schedules))
+
+	assert.EqualValues(t, []Schedule{
+		{
+			ScheduleGroup:          []string{"aaaa", "bbbb", "cccc"},
+			AllOnCallGroupName:     "all-oncall-platform-engineers",
+			CurrentOnCallGroupName: "current-oncall-platform-engineer",
+		},
+	},
+		config.Schedules)
 }
 
 func Test_NewConfigFromEnv_NoSchedulesDefined(t *testing.T) {

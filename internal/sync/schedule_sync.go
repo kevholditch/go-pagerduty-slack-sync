@@ -9,7 +9,6 @@ import (
 
 // Schedules does the sync
 func Schedules(config *Config) error {
-
 	logrus.Infof("running schedule sync...")
 	s, err := newSlackClient(config.SlackToken)
 	if err != nil {
@@ -17,7 +16,7 @@ func Schedules(config *Config) error {
 	}
 	p := newPagerDutyClient(config.PagerDutyToken)
 
-	updateSchedule := func(emails []string, groupName string) error {
+	updateSlackGroup := func(emails []string, groupName string) error {
 		slackIDs, err := s.getSlackIDsFromEmails(emails)
 		if err != nil {
 			return err
@@ -49,7 +48,7 @@ func Schedules(config *Config) error {
 			return err
 		}
 
-		err = updateSchedule(emails, schedule.CurrentOnCallGroupName)
+		err = updateSlackGroup(emails, schedule.CurrentOnCallGroupName)
 		if err != nil {
 			return err
 		}
@@ -60,7 +59,7 @@ func Schedules(config *Config) error {
 			return err
 		}
 
-		err = updateSchedule(emails, schedule.AllOnCallGroupName)
+		err = updateSlackGroup(emails, schedule.AllOnCallGroupName)
 		if err != nil {
 			return err
 		}
