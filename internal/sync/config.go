@@ -29,11 +29,11 @@ type Config struct {
 }
 
 // Schedule models a PagerDuty schedule that will be synced with Slack
-// ScheduleID - PagerDuty schedule id to sync
+// ScheduleIDs - All PagerDuty schedule ID's to sync
 // AllOnCallGroupName - Slack group name for all members of schedule
 // CurrentOnCallGroupName - Slack group name for current person on call
 type Schedule struct {
-	ScheduleID             string
+	ScheduleIDs            []string
 	AllOnCallGroupName     string
 	CurrentOnCallGroupName string
 }
@@ -69,11 +69,8 @@ func NewConfigFromEnv() (*Config, error) {
 			if len(scheduleValues) != 2 {
 				return nil, fmt.Errorf("expecting schedule value to be a comma separated scheduleId,name but got %s", value)
 			}
-			config.Schedules = append(config.Schedules, Schedule{
-				ScheduleID:             scheduleValues[0],
-				AllOnCallGroupName:     fmt.Sprintf("all-oncall-%ss", scheduleValues[1]),
-				CurrentOnCallGroupName: fmt.Sprintf("current-oncall-%s", scheduleValues[1]),
-			})
+
+			config.Schedules = appendSchedule(config.Schedules, scheduleValues[0], scheduleValues[1])
 		}
 	}
 
@@ -82,6 +79,39 @@ func NewConfigFromEnv() (*Config, error) {
 	}
 
 	return config, nil
+}
+
+func appendSchedule(schedules []Schedule, scheduleID, teamName string) []Schedule {
+	currentGroupName := fmt.Sprintf("current-oncall-%s", teamName)
+	allGroupName := fmt.Sprintf("all-oncall-%ss", teamName)
+	newScheduleList := make([]Schedule, len(schedules))
+	updated := false
+
+	for i, s := range schedules {
+		if s.CurrentOnCallGroupName != currentGroupName {
+			newScheduleList[i] = s
+
+			continue
+		}
+
+		updated = true
+
+		newScheduleList[i] = Schedule{
+			ScheduleIDs:            append(s.ScheduleIDs, scheduleID),
+			AllOnCallGroupName:     allGroupName,
+			CurrentOnCallGroupName: currentGroupName,
+		}
+	}
+
+	if !updated {
+		newScheduleList = append(newScheduleList, Schedule{
+			ScheduleIDs:            []string{scheduleID},
+			AllOnCallGroupName:     allGroupName,
+			CurrentOnCallGroupName: currentGroupName,
+		})
+	}
+
+	return newScheduleList
 }
 
 func getPagerdutyScheduleLookahead() (time.Duration, error) {

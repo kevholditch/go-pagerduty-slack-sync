@@ -2,6 +2,7 @@ package sync
 
 import (
 	"strings"
+	"time"
 
 	"github.com/kevholditch/go-pagerduty-slack-sync/internal/compare"
 	"github.com/sirupsen/logrus"
@@ -9,7 +10,6 @@ import (
 
 // Schedules does the sync
 func Schedules(config *Config) error {
-
 	logrus.Infof("running schedule sync...")
 	s, err := newSlackClient(config.SlackToken)
 	if err != nil {
@@ -17,7 +17,7 @@ func Schedules(config *Config) error {
 	}
 	p := newPagerDutyClient(config.PagerDutyToken)
 
-	updateSchedule := func(emails []string, groupName string) error {
+	updateSlackGroup := func(emails []string, groupName string) error {
 		slackIDs, err := s.getSlackIDsFromEmails(emails)
 		if err != nil {
 			return err
@@ -42,30 +42,60 @@ func Schedules(config *Config) error {
 		return nil
 	}
 
+	getEmailsForSchedules := func(schedules []string, lookahead time.Duration) ([]string, error) {
+		var emails []string
+
+		for _, sid := range schedules {
+			e, err := p.getEmailsForSchedule(sid, lookahead)
+			if err != nil {
+				return nil, err
+			}
+
+			emails = appendIfMissing(emails, e...)
+		}
+
+		return emails, nil
+	}
+
 	for _, schedule := range config.Schedules {
 		logrus.Infof("checking slack group: %s", schedule.CurrentOnCallGroupName)
-		emails, err := p.getEmailsOfCurrentOnCallForSchedule(schedule.ScheduleID)
+
+		currentOncallEngineerEmails, err := getEmailsForSchedules(schedule.ScheduleIDs, time.Second)
 		if err != nil {
 			return err
 		}
 
-		err = updateSchedule(emails, schedule.CurrentOnCallGroupName)
+		err = updateSlackGroup(currentOncallEngineerEmails, schedule.CurrentOnCallGroupName)
 		if err != nil {
 			return err
 		}
 
 		logrus.Infof("checking slack group: %s", schedule.AllOnCallGroupName)
-		emails, err = p.getEmailsOfAllOnCallForSchedule(schedule.ScheduleID, config.PagerdutyScheduleLookahead)
+
+		allOncallEngineerEmails, err := getEmailsForSchedules(schedule.ScheduleIDs, config.PagerdutyScheduleLookahead)
 		if err != nil {
 			return err
 		}
 
-		err = updateSchedule(emails, schedule.AllOnCallGroupName)
+		err = updateSlackGroup(allOncallEngineerEmails, schedule.AllOnCallGroupName)
 		if err != nil {
 			return err
 		}
-
 	}
 
 	return nil
+}
+
+func appendIfMissing(slice []string, items ...string) []string {
+out:
+	for _, i := range items {
+		for _, ele := range slice {
+			if ele == i {
+				continue out
+			}
+		}
+		slice = append(slice, i)
+	}
+
+	return slice
 }
