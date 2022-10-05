@@ -62,24 +62,28 @@ func Schedules(config *Config) error {
 
 		currentOncallEngineerEmails, err := getEmailsForSchedules(schedule.ScheduleIDs, time.Second)
 		if err != nil {
-			return err
+			logrus.Errorf("failed to get emails for %s: %v", schedule.CurrentOnCallGroupName, err)
+			continue
 		}
 
 		err = updateSlackGroup(currentOncallEngineerEmails, schedule.CurrentOnCallGroupName)
 		if err != nil {
-			return err
+			logrus.Errorf("failed to update slack group %s: %v", schedule.CurrentOnCallGroupName, err)
+			continue
 		}
 
 		logrus.Infof("checking slack group: %s", schedule.AllOnCallGroupName)
 
 		allOncallEngineerEmails, err := getEmailsForSchedules(schedule.ScheduleIDs, config.PagerdutyScheduleLookahead)
 		if err != nil {
-			return err
+			logrus.Errorf("failed to get emails for %s: %v", schedule.AllOnCallGroupName, err)
+			continue
 		}
 
 		err = updateSlackGroup(allOncallEngineerEmails, schedule.AllOnCallGroupName)
 		if err != nil {
-			return err
+			logrus.Errorf("failed to update slack group %s: %v", schedule.AllOnCallGroupName, err)
+			continue
 		}
 	}
 
