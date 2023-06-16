@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/kevholditch/go-pagerduty-slack-sync/internal/sync"
-	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/loveholidays/go-pagerduty-slack-sync/src/sync"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {

@@ -1,0 +1,13 @@
+
+
+-e REQUIRES_COMBINED_ON_CALL_GROUP=false
+-e REQUIRES_ALL_ON_CALL_GROUP="oncall"
+-e SCHEDULE_TEAM_BOOKINGS=Bookings,bookings -e SCHEDULE_TEAM_BOOKINGS_ALL=Bookings,engineers
+-e SCHEDULE_TEAM_DATA_ENGINEERING=DataEngineering,data_engineering -e SCHEDULE_TEAM_DATA_ENGINEERING_ALL=DataEngineering,engineers
+-e SCHEDULE_TEAM_DEVOPS=DevOps,devops -e SCHEDULE_TEAM_DEVOPS_ALL=DevOps,engineers
+-e SCHEDULE_TEAM_DPI=DPI,dpi -e SCHEDULE_TEAM_DPI_ALL=DPI,engineers
+-e SCHEDULE_TEAM_MANAGE=Manage,manage -e SCHEDULE_TEAM_MANAGE_ALL=Manage,engineers
+-e SCHEDULE_TEAM_PACKAGES=Packages,packages -e SCHEDULE_TEAM_PACKAGES_ALL=Packages,engineers
+-e SCHEDULE_TEAM_SEARCH=Search,search -e SCHEDULE_TEAM_SEARCH_ALL=Search,engineers
+-e SCHEDULE_TEAM_SUPPLY_FLIGHTS="Supply Flights & Virtual Cards,supply-flights" -e SCHEDULE_TEAM_SUPPLY_FLIGHTS_ALL="Supply Flights & Virtual Cards,engineers"
+-e SCHEDULE_TEAM_SUPPLY_HOTELS="Supply Hotels & Ancillaries,supply-hotels" -e SCHEDULE_TEAM_SUPPLY_HOTELS="Supply Hotels & Ancillaries,engineers"

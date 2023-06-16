@@ -6,15 +6,21 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
-	scheduleKeyPrefix      = "SCHEDULE_"
-	pagerDutyTokenKey      = "PAGERDUTY_TOKEN"
-	slackTokenKey          = "SLACK_TOKEN"
-	runInterval            = "RUN_INTERVAL_SECONDS"
-	pdScheduleLookaheadKey = "PAGERDUTY_SCHEDULE_LOOKAHEAD"
-	runIntervalDefault     = 60
+	scheduleKeyPrefix                 = "SCHEDULE_"
+	pagerDutyTokenKey                 = "PAGERDUTY_TOKEN"
+	slackTokenKey                     = "SLACK_TOKEN"
+	runInterval                       = "RUN_INTERVAL_SECONDS"
+	pdScheduleLookaheadKey            = "PAGERDUTY_SCHEDULE_LOOKAHEAD"
+	oncallGroupNamePrefixKey          = "ON_CALL_GROUP_NAME_PREFIX"
+	requiresAllOnCallGroupKey         = "REQUIRES_ALL_ON_CALL_GROUP"
+	runIntervalDefault                = 60
+	defaultCurrentOnCallGroupPrefix   = "current-oncall"
+	defaultRequiresAllOnCallGroupFlag = true
 )
 
 // Config is used to configure application
@@ -26,6 +32,8 @@ type Config struct {
 	SlackToken                 string
 	RunIntervalInSeconds       int
 	PagerdutyScheduleLookahead time.Duration
+	OnCallGroupNamePrefix      string
+	RequiresAllOnCallGroup     bool
 }
 
 // Schedule models a PagerDuty schedule that will be synced with Slack
@@ -38,7 +46,7 @@ type Schedule struct {
 	CurrentOnCallGroupName string
 }
 
-// NewConfigFromEnv is a function to generate a config from env varibles
+// NewConfigFromEnv is a function to generate a config from env variables
 // PAGERDUTY_TOKEN - PagerDuty Token
 // SLACK_TOKEN - Slack Token
 // SCHEDULE_XXX="id,name" e.g. 1234,platform-engineer will generate a schedule with the following values
@@ -62,6 +70,9 @@ func NewConfigFromEnv() (*Config, error) {
 	}
 	config.PagerdutyScheduleLookahead = pagerdutyScheduleLookahead
 
+	config.OnCallGroupNamePrefix = getOnCallGroupNamePrefix()
+	config.RequiresAllOnCallGroup = getRequiresAllOnCallGroup()
+
 	for _, key := range os.Environ() {
 		if strings.HasPrefix(key, scheduleKeyPrefix) {
 			value := strings.Split(key, "=")[1]
@@ -70,7 +81,12 @@ func NewConfigFromEnv() (*Config, error) {
 				return nil, fmt.Errorf("expecting schedule value to be a comma separated scheduleId,name but got %s", value)
 			}
 
-			config.Schedules = appendSchedule(config.Schedules, scheduleValues[0], scheduleValues[1])
+			config.Schedules = appendSchedule(
+				config.Schedules,
+				config.OnCallGroupNamePrefix,
+				scheduleValues[0],
+				scheduleValues[1],
+			)
 		}
 	}
 
@@ -81,8 +97,8 @@ func NewConfigFromEnv() (*Config, error) {
 	return config, nil
 }
 
-func appendSchedule(schedules []Schedule, scheduleID, teamName string) []Schedule {
-	currentGroupName := fmt.Sprintf("current-oncall-%s", teamName)
+func appendSchedule(schedules []Schedule, prefix string, scheduleID string, teamName string) []Schedule {
+	currentGroupName := fmt.Sprintf("%s-%s", prefix, teamName)
 	allGroupName := fmt.Sprintf("all-oncall-%ss", teamName)
 	newScheduleList := make([]Schedule, len(schedules))
 	updated := false
@@ -128,4 +144,31 @@ func getPagerdutyScheduleLookahead() (time.Duration, error) {
 	}
 
 	return v, nil
+}
+
+func getOnCallGroupNamePrefix() string {
+	oncallGroupNamePrefix, ok := os.LookupEnv(oncallGroupNamePrefixKey)
+
+	if !ok {
+		logrus.Infof("%s not provided - defaulting to %s", oncallGroupNamePrefixKey, defaultCurrentOnCallGroupPrefix)
+		return defaultCurrentOnCallGroupPrefix
+	}
+
+	return oncallGroupNamePrefix
+}
+
+func getRequiresAllOnCallGroup() bool {
+	requiresAllOnCallGroupValue, ok := os.LookupEnv(requiresAllOnCallGroupKey)
+	if !ok {
+		logrus.Infof("%s not provided - defaulting to %v", requiresAllOnCallGroupKey, defaultRequiresAllOnCallGroupFlag)
+		return defaultRequiresAllOnCallGroupFlag
+	}
+
+	requiresAllOnCallGroup, err := strconv.ParseBool(requiresAllOnCallGroupValue)
+	if err != nil {
+		logrus.Errorf("Could not parse: %s - defaulting to %v -> %s", requiresAllOnCallGroupKey, defaultRequiresAllOnCallGroupFlag, err)
+		return defaultRequiresAllOnCallGroupFlag
+	}
+
+	return requiresAllOnCallGroup
 }

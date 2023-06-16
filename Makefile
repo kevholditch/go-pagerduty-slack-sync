@@ -2,7 +2,7 @@
 TAG ?= $$(git describe --tags)
 
 build:
-	@env GOMODULE111=on find ./cmd/* -maxdepth 1 -type d -exec go build "{}" \;
+	go build
 
 install-lint:
 	@go get -u golang.org/x/lint/golint

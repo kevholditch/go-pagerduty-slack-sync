@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kevholditch/go-pagerduty-slack-sync/internal/compare"
+	"github.com/loveholidays/go-pagerduty-slack-sync/src/compare"
 	"github.com/sirupsen/logrus"
 )
 
@@ -69,6 +69,11 @@ func Schedules(config *Config) error {
 		err = updateSlackGroup(currentOncallEngineerEmails, schedule.CurrentOnCallGroupName)
 		if err != nil {
 			logrus.Errorf("failed to update slack group %s: %v", schedule.CurrentOnCallGroupName, err)
+			continue
+		}
+
+		if !config.RequiresAllOnCallGroup {
+			logrus.Infof("All on call slack group not required, skipping")
 			continue
 		}
 
