@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/loveholidays/go-pagerduty-slack-sync/src/compare"
+	"github.com/kevholditch/go-pagerduty-slack-sync/internal/compare"
 	"github.com/sirupsen/logrus"
 )
 

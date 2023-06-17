@@ -1,6 +1,6 @@
-module github.com/loveholidays/go-pagerduty-slack-sync
+module github.com/kevholditch/go-pagerduty-slack-sync
 
-go 1.19
+go 1.15
 
 require (
 	github.com/PagerDuty/go-pagerduty v1.3.0

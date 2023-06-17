@@ -1,2 +1,4 @@
 .idea
-go-pagerduty-slack-sync
+
+pagerduty-slack-sync
+!/cmd/pagerduty-slack-sync
