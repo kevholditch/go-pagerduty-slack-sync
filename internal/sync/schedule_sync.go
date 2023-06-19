@@ -58,37 +58,36 @@ func Schedules(config *Config) error {
 	}
 
 	for _, schedule := range config.Schedules {
-		logrus.Infof("checking slack group: %s", schedule.CurrentOnCallGroupName)
+		if schedule.CurrentOnCallGroup.IsRequired {
+			logrus.Infof("checking slack group: %s", schedule.CurrentOnCallGroup.Name)
 
-		currentOncallEngineerEmails, err := getEmailsForSchedules(schedule.ScheduleIDs, time.Second)
-		if err != nil {
-			logrus.Errorf("failed to get emails for %s: %v", schedule.CurrentOnCallGroupName, err)
-			continue
+			currentOncallEngineerEmails, err := getEmailsForSchedules(schedule.ScheduleIDs, time.Second)
+			if err != nil {
+				logrus.Errorf("failed to get emails for %s: %v", schedule.CurrentOnCallGroup.Name, err)
+				continue
+			}
+
+			err = updateSlackGroup(currentOncallEngineerEmails, schedule.CurrentOnCallGroup.Name)
+			if err != nil {
+				logrus.Errorf("failed to update slack group %s: %v", schedule.CurrentOnCallGroup.Name, err)
+				continue
+			}
 		}
 
-		err = updateSlackGroup(currentOncallEngineerEmails, schedule.CurrentOnCallGroupName)
-		if err != nil {
-			logrus.Errorf("failed to update slack group %s: %v", schedule.CurrentOnCallGroupName, err)
-			continue
-		}
+		if schedule.AllOnCallGroup.IsRequired {
+			logrus.Infof("checking slack group: %s", schedule.AllOnCallGroup.Name)
 
-		if !config.RequiresAllOnCallGroup {
-			logrus.Infof("All on call slack group not required, skipping")
-			continue
-		}
+			allOncallEngineerEmails, err := getEmailsForSchedules(schedule.ScheduleIDs, config.PagerdutyScheduleLookahead)
+			if err != nil {
+				logrus.Errorf("failed to get emails for %s: %v", schedule.AllOnCallGroup.Name, err)
+				continue
+			}
 
-		logrus.Infof("checking slack group: %s", schedule.AllOnCallGroupName)
-
-		allOncallEngineerEmails, err := getEmailsForSchedules(schedule.ScheduleIDs, config.PagerdutyScheduleLookahead)
-		if err != nil {
-			logrus.Errorf("failed to get emails for %s: %v", schedule.AllOnCallGroupName, err)
-			continue
-		}
-
-		err = updateSlackGroup(allOncallEngineerEmails, schedule.AllOnCallGroupName)
-		if err != nil {
-			logrus.Errorf("failed to update slack group %s: %v", schedule.AllOnCallGroupName, err)
-			continue
+			err = updateSlackGroup(allOncallEngineerEmails, schedule.AllOnCallGroup.Name)
+			if err != nil {
+				logrus.Errorf("failed to update slack group %s: %v", schedule.AllOnCallGroup.Name, err)
+				continue
+			}
 		}
 	}
 
