@@ -63,7 +63,7 @@ for example:
 ```bash
 -e SCHEDULE_TEAM_1=abcd,platform-engineer,current|all
 -e SCHEDULE_TEAM_2=efgh,core-team,all,noPlural
--e SCHEDULE_TEAM_3=ijkl,data-engineering,current,noPlural
+-e SCHEDULE_TEAM_3=ijkl,data-engineering,current
 -e SCHEDULE_TEAM_3=mnop,frontend-engineer,,noPlural
 ```
 
@@ -76,7 +76,7 @@ will create:
 
 - `@all-oncall-platform-engineer` and `@current-oncall-platform-engineers` for `SCHEDULE_TEAM_1`
 - `@all-oncall-core-team` with `core-team` not pluralized only for  `SCHEDULE_TEAM_2`
-- `@all-oncall-infrastructure` with `infrastructure` not pluralized only for `SCHEDULE_TEAM_2`
+- `@current-oncall-infrastructure` only for `SCHEDULE_TEAM_2`
 - `@all-oncall-frontend-engineer` and `@current-oncall-frontend-engineer` with `frontend-engineer` not pluralized for `SCHEDULE_TEAM_1`
 
 Full parameter list:
@@ -88,9 +88,7 @@ Full parameter list:
 | SCHEDULE_<NAME>                 | A PagerDuty schedule that you want to sync                                        | n/a            | 1234,platform-engineer  |
 | RUN_INTERVAL_SECONDS            | Run a sync every X seconds                                                        | 60             | 300                     |
 | PAGERDUTY_SCHEDULE_LOOKAHEAD    | How far into the future to evaluate Pagerduty schedules (Go time duration format) | 2400h          | 8760h                   |
-| REQUIRES_ALL_ON_CALL_GROUP | Boolean to enable the creation of the all on call slack group                     | true           | false                   |
 | ON_CALL_GROUP_NAME_PREFIX       | Prefix to be used for the current on call slack group                             | current-oncall | oncall                  |
-
 
 ## Slack permissions
 
