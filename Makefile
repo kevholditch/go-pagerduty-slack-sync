@@ -1,9 +1,10 @@
 
 TAG ?= $$(git describe --tags)
 
-build:
-	@env GOMODULE111=on find ./cmd/* -maxdepth 1 -type d -exec go build "{}" \;
+build: pagerduty-slack-sync
 
+pagerduty-slack-sync:
+	@env GOMODULE111=on CGO_ENABLED=0 go build ./cmd/pagerduty-slack-sync/
 
 vet:
 	@go vet -v ./...
