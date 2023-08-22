@@ -1,4 +1,5 @@
-FROM golang:1.15.4-buster as builder
+ARG GOVERSION=1.15.4
+FROM golang:${GOVERSION} as builder
 COPY . /go-pagerduty-slack-sync
 WORKDIR /go-pagerduty-slack-sync
 ENV GO111MODULE=on
