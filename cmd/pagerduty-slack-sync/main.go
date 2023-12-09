@@ -1,17 +1,19 @@
 package main
 
 import (
-	"github.com/kevholditch/go-pagerduty-slack-sync/internal/sync"
-	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/kevholditch/go-pagerduty-slack-sync/internal/sync"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
 
-	stop := make(chan os.Signal)
+	// Make the stop channel buffered
+	stop := make(chan os.Signal, 1) // Buffer size of 1
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
 	config, err := sync.NewConfigFromEnv()
@@ -40,5 +42,4 @@ func main() {
 			}
 		}
 	}
-
 }
