@@ -1,4 +1,5 @@
-FROM golang:1.21-buster as builder
+# Use the latest available Go 1.21 image
+FROM golang:1.21 as builder
 COPY . /go-pagerduty-slack-sync
 WORKDIR /go-pagerduty-slack-sync
 ENV GO111MODULE=on
