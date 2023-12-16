@@ -41,6 +41,8 @@ This will result in a pair of slack groups with the combined users:
 - `@all-oncall-platform-engineers` => combined list of all users in `abcd` and `efgh` schedules
 - `@current-oncall-platform-engineer` => combined list of current on call users in `abcd` and `efgh` schedules
 
+A slack group will be created with all the current on call engineers of the company:
+- `@all-current-oncall-engineers`
 
 Full parameter list:
 

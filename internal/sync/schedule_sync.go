@@ -8,6 +8,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	allCurrentOncallEngineersSlackGroup = "all-current-oncall-engineers"
+)
+
 // Schedules does the sync
 func Schedules(config *Config) error {
 	logrus.Infof("running schedule sync...")
@@ -57,6 +61,8 @@ func Schedules(config *Config) error {
 		return emails, nil
 	}
 
+	var allCurrentOncallEngineerEmails []string
+
 	for _, schedule := range config.Schedules {
 		logrus.Infof("checking slack group: %s", schedule.CurrentOnCallGroupName)
 
@@ -65,6 +71,7 @@ func Schedules(config *Config) error {
 			logrus.Errorf("failed to get emails for %s: %v", schedule.CurrentOnCallGroupName, err)
 			continue
 		}
+		allCurrentOncallEngineerEmails = appendIfMissing(allCurrentOncallEngineerEmails, currentOncallEngineerEmails...)
 
 		err = updateSlackGroup(currentOncallEngineerEmails, schedule.CurrentOnCallGroupName)
 		if err != nil {
@@ -85,6 +92,11 @@ func Schedules(config *Config) error {
 			logrus.Errorf("failed to update slack group %s: %v", schedule.AllOnCallGroupName, err)
 			continue
 		}
+	}
+
+	err = updateSlackGroup(allCurrentOncallEngineerEmails, allCurrentOncallEngineersSlackGroup)
+	if err != nil {
+		logrus.Errorf("failed to update slack group %s: %v", allCurrentOncallEngineersSlackGroup, err)
 	}
 
 	return nil
