@@ -3,18 +3,23 @@ package sync
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 )
 
 const (
-	scheduleKeyPrefix      = "SCHEDULE_"
-	pagerDutyTokenKey      = "PAGERDUTY_TOKEN"
-	slackTokenKey          = "SLACK_TOKEN"
-	runInterval            = "RUN_INTERVAL_SECONDS"
-	pdScheduleLookaheadKey = "PAGERDUTY_SCHEDULE_LOOKAHEAD"
-	runIntervalDefault     = 60
+	scheduleKeyPrefix          = "SCHEDULE_"
+	pagerDutyTokenKey          = "PAGERDUTY_TOKEN"
+	slackTokenKey              = "SLACK_TOKEN"
+	runInterval                = "RUN_INTERVAL_SECONDS"
+	pdScheduleLookaheadKey     = "PAGERDUTY_SCHEDULE_LOOKAHEAD"
+	currentOnCallFormat        = "USER_GROUP_CURRENT_ON_CALL_FORMAT"
+	currentOnCallEnabled       = "USER_GROUP_CURRENT_ON_CALL_ENABLED"
+	allOnCallFormat            = "USER_GROUP_ALL_ON_CALL_FORMAT"
+	allOnCallEnabled           = "USER_GROUP_ALL_ON_CALL_ENABLED"
+	currentOnCallFormatDefault = "current-oncall-%s"
+	allOnCallFormatDefault     = "all-oncall-%ss"
+	runIntervalDefault         = 60
 )
 
 // Config is used to configure application
@@ -26,6 +31,10 @@ type Config struct {
 	SlackToken                 string
 	RunIntervalInSeconds       int
 	PagerdutyScheduleLookahead time.Duration
+	CurrentOnCallNameFormat    string
+	AllOnCallNameFormat        string
+	CurrentOnCallEnabled       bool
+	AllOnCallEnabled           bool
 }
 
 // Schedule models a PagerDuty schedule that will be synced with Slack
@@ -45,15 +54,13 @@ type Schedule struct {
 // ScheduleID = "1234", AllOnCallGroupName = "all-oncall-platform-engineers", CurrentOnCallGroupName: "current-oncall-platform-engineer"
 func NewConfigFromEnv() (*Config, error) {
 	config := &Config{
-		PagerDutyToken:       os.Getenv(pagerDutyTokenKey),
-		SlackToken:           os.Getenv(slackTokenKey),
-		RunIntervalInSeconds: runIntervalDefault,
-	}
-
-	runInterval := os.Getenv(runInterval)
-	v, err := strconv.Atoi(runInterval)
-	if err == nil {
-		config.RunIntervalInSeconds = v
+		PagerDutyToken:          os.Getenv(pagerDutyTokenKey),
+		SlackToken:              os.Getenv(slackTokenKey),
+		RunIntervalInSeconds:    GetEnvInt(runInterval, runIntervalDefault),
+		CurrentOnCallNameFormat: GetEnvStr(currentOnCallFormat, currentOnCallFormatDefault),
+		CurrentOnCallEnabled:    GetEnvBool(currentOnCallEnabled, true),
+		AllOnCallNameFormat:     GetEnvStr(allOnCallFormat, allOnCallFormatDefault),
+		AllOnCallEnabled:        GetEnvBool(allOnCallEnabled, true),
 	}
 
 	pagerdutyScheduleLookahead, err := getPagerdutyScheduleLookahead()
@@ -70,7 +77,7 @@ func NewConfigFromEnv() (*Config, error) {
 				return nil, fmt.Errorf("expecting schedule value to be a comma separated scheduleId,name but got %s", value)
 			}
 
-			config.Schedules = appendSchedule(config.Schedules, scheduleValues[0], scheduleValues[1])
+			config.Schedules = appendSchedule(config, scheduleValues[0], scheduleValues[1])
 		}
 	}
 
@@ -81,13 +88,23 @@ func NewConfigFromEnv() (*Config, error) {
 	return config, nil
 }
 
-func appendSchedule(schedules []Schedule, scheduleID, teamName string) []Schedule {
-	currentGroupName := fmt.Sprintf("current-oncall-%s", teamName)
-	allGroupName := fmt.Sprintf("all-oncall-%ss", teamName)
-	newScheduleList := make([]Schedule, len(schedules))
+func getEnvOrDefault(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return defaultValue
+	}
+	return value
+}
+
+func appendSchedule(config *Config, scheduleID, teamName string) []Schedule {
+
+	currentGroupName := fmt.Sprintf(config.CurrentOnCallNameFormat, teamName)
+	allGroupName := fmt.Sprintf(config.AllOnCallNameFormat, teamName)
+
+	newScheduleList := make([]Schedule, len(config.Schedules))
 	updated := false
 
-	for i, s := range schedules {
+	for i, s := range config.Schedules {
 		if s.CurrentOnCallGroupName != currentGroupName {
 			newScheduleList[i] = s
 
