@@ -24,7 +24,7 @@ func main() {
 		return
 	}
 
-	logrus.Infof("starting, going to sync %d schedules", len(config.Schedules))
+	logrus.Infof("starting, going to sync %d schedules every %d seconds.", len(config.Schedules), config.RunIntervalInSeconds)
 
 	timer := time.NewTicker(time.Second * time.Duration(config.RunIntervalInSeconds))
 
