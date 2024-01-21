@@ -33,6 +33,33 @@ func Test_NewConfigFromEnv_SingleScheduleDefined(t *testing.T) {
 		config.Schedules))
 }
 
+func Test_NewConfigFromEnv_FormatsChanged(t *testing.T) {
+	defer SetEnv("SCHEDULE_PLATFORM", "1234,platform-engineer")()
+	defer SetEnv("PAGERDUTY_TOKEN", "token1")()
+	defer SetEnv("SLACK_TOKEN", "secretToken1")()
+	defer SetEnv("RUN_INTERVAL_SECONDS", "10")()
+	defer SetEnv("USER_GROUP_CURRENT_ON_CALL_FORMAT", "pd-%s")()
+	defer SetEnv("USER_GROUP_ALL_ON_CALL_FORMAT", "all-%ss")()
+
+	config, err := NewConfigFromEnv()
+
+	assert.NoError(t, err)
+	assert.Equal(t, "token1", config.PagerDutyToken)
+	assert.Equal(t, "secretToken1", config.SlackToken)
+	assert.Equal(t, 10, config.RunIntervalInSeconds)
+	assert.Equal(t, time.Hour*24*100, config.PagerdutyScheduleLookahead)
+	assert.Equal(t, 1, len(config.Schedules))
+	assert.Equal(t, "all-platform-engineers", config.Schedules[0].AllOnCallGroupName)
+	assert.Equal(t, "pd-platform-engineer", config.Schedules[0].CurrentOnCallGroupName)
+
+	assert.True(t, assert.ObjectsAreEqualValues([]Schedule{{
+		ScheduleIDs:            []string{"1234"},
+		AllOnCallGroupName:     "all-platform-engineers",
+		CurrentOnCallGroupName: "pd-platform-engineer",
+	}},
+		config.Schedules))
+}
+
 func Test_NewConfigFromEnv_SingleScheduleDefinedWithDefaultRunInterval(t *testing.T) {
 	defer SetEnv("SCHEDULE_PLATFORM", "1234,platform-engineer")()
 	defer SetEnv("PAGERDUTY_TOKEN", "token1")()
