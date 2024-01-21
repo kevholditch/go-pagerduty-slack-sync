@@ -16,7 +16,8 @@ func main() {
 	stop := make(chan os.Signal, 1) // Buffer size of 1
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
-	config, err := sync.NewConfigFromEnv()
+	config, err := getConfig()
+
 	if err != nil {
 		logrus.Errorf("could not parse config, error: %v", err)
 		os.Exit(-1)
@@ -41,5 +42,16 @@ func main() {
 				return
 			}
 		}
+	}
+}
+
+func getConfig() (*sync.Config, error) {
+	configYamlFilePath := os.Getenv("CONFIG_YAML_FILE_PATH")
+	if configYamlFilePath != "" {
+		logrus.Infof("Getting configuration from yaml config %s", configYamlFilePath)
+		return sync.NewConfigFromYaml(configYamlFilePath)
+	} else {
+		logrus.Infof("Getting configuration from environment variables")
+		return sync.NewConfigFromEnv()
 	}
 }
