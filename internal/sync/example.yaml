@@ -1,0 +1,18 @@
+run-interval: 600
+pager-duty-look-ahead-duration: 24h
+pager-duty-token: "token1"
+slack-token: "secretToken1"
+current-on-call-enabled: true
+all-on-call-enabled: false
+user-groups:
+  - user-group:
+    name: platform-engineer
+    schedules:
+      - 1234
+  - user-group:
+    name: company-wide
+    current-on-call-name-format: "pd-%s"
+    all-on-call-name-format: "all-%s"
+    schedules:
+      - 123
+      - 12345
