@@ -22,12 +22,12 @@ func Test_NewConfigFromEnv_SingleScheduleDefined(t *testing.T) {
 	assert.Equal(t, 10, config.RunIntervalInSeconds)
 	assert.Equal(t, time.Hour*24*100, config.PagerdutyScheduleLookahead)
 	assert.Equal(t, 1, len(config.Schedules))
-	assert.Equal(t, "team-platform-support", config.Schedules[0].AllOnCallGroupName)
+	assert.Equal(t, "platform-support-everyone", config.Schedules[0].AllOnCallGroupName)
 	assert.Equal(t, "platform-support", config.Schedules[0].CurrentOnCallGroupName)
 
 	assert.True(t, assert.ObjectsAreEqualValues([]Schedule{{
 		ScheduleIDs:            []string{"1234"},
-		AllOnCallGroupName:     "team-platform-support",
+		AllOnCallGroupName:     "platform-support-everyone",
 		CurrentOnCallGroupName: "platform-support",
 	}},
 		config.Schedules))
@@ -45,12 +45,12 @@ func Test_NewConfigFromEnv_SingleScheduleDefinedWithDefaultRunInterval(t *testin
 	assert.Equal(t, "secretToken1", config.SlackToken)
 	assert.Equal(t, 60, config.RunIntervalInSeconds)
 	assert.Equal(t, 1, len(config.Schedules))
-	assert.Equal(t, "team-platform-support", config.Schedules[0].AllOnCallGroupName)
+	assert.Equal(t, "platform-support-everyone", config.Schedules[0].AllOnCallGroupName)
 	assert.Equal(t, "platform-support", config.Schedules[0].CurrentOnCallGroupName)
 
 	assert.True(t, assert.ObjectsAreEqualValues([]Schedule{{
 		ScheduleIDs:            []string{"1234"},
-		AllOnCallGroupName:     "team-platform-support",
+		AllOnCallGroupName:     "platform-support-everyone",
 		CurrentOnCallGroupName: "platform-support",
 	}},
 		config.Schedules))
@@ -70,12 +70,12 @@ func Test_NewConfigFromEnv_SingleScheduleDefinedWithScheduleLookahead(t *testing
 	assert.Equal(t, 60, config.RunIntervalInSeconds)
 	assert.Equal(t, time.Hour*24*365, config.PagerdutyScheduleLookahead)
 	assert.Equal(t, 1, len(config.Schedules))
-	assert.Equal(t, "team-platform-support", config.Schedules[0].AllOnCallGroupName)
+	assert.Equal(t, "platform-support-everyone", config.Schedules[0].AllOnCallGroupName)
 	assert.Equal(t, "platform-support", config.Schedules[0].CurrentOnCallGroupName)
 
 	assert.True(t, assert.ObjectsAreEqualValues([]Schedule{{
 		ScheduleIDs:            []string{"1234"},
-		AllOnCallGroupName:     "team-platform-support",
+		AllOnCallGroupName:     "platform-support-everyone",
 		CurrentOnCallGroupName: "platform-support",
 	}},
 		config.Schedules))
@@ -98,17 +98,17 @@ func Test_NewConfigFromEnv_MultipleScheduleDefined(t *testing.T) {
 	assert.True(t, assert.ObjectsAreEqualValues([]Schedule{
 		{
 			ScheduleIDs:            []string{"1234"},
-			AllOnCallGroupName:     "team-platform-support",
+			AllOnCallGroupName:     "platform-support-everyone",
 			CurrentOnCallGroupName: "platform-support",
 		},
 		{
 			ScheduleIDs:            []string{"abcd"},
-			AllOnCallGroupName:     "team-website-support",
+			AllOnCallGroupName:     "website-support-everyone",
 			CurrentOnCallGroupName: "website-support",
 		},
 		{
 			ScheduleIDs:            []string{"efghass"},
-			AllOnCallGroupName:     "team-mobile-support",
+			AllOnCallGroupName:     "mobile-support-everyone",
 			CurrentOnCallGroupName: "mobile-support",
 		},
 	},
@@ -132,7 +132,7 @@ func Test_NewConfigFromEnv_WithScheduleGroups(t *testing.T) {
 	assert.EqualValues(t, []Schedule{
 		{
 			ScheduleIDs:            []string{"aaaa", "bbbb", "cccc"},
-			AllOnCallGroupName:     "team-website-support",
+			AllOnCallGroupName:     "website-support-everyone",
 			CurrentOnCallGroupName: "website-support",
 		},
 	},
