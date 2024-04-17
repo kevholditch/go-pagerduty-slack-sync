@@ -23,11 +23,11 @@ docker run -e RUN_INTERVAL_SECONDS=60 -e SLACK_TOKEN=xxx -e PAGERDUTY_TOKEN=xxx 
 
 The following slack groups would be created:
 
-- `@team-platform-support` => `user1, user2, user3` 
+- `@platform-support-everyone` => `user1, user2, user3` 
 - `@platform-support` => `user3`
     
 Multiple schedules can be synced at once by passing many env variables beginning with `SCHEDULE_`.  The format for the value that the schedule parameter expects is `<pagerduty schedule id>/<group-name>`.  The `<group name>` will be used to build the two names for the slack groups using the following format:
-    - `team-<group-name>-support`
+    - `<group-name>-support-everyone`
     - `<group-name>-support`
 
 If there are multiple schedules with the same `<group-name>` are defined, then slack groups contains the combined list of all people for all the given schedules.
@@ -38,7 +38,7 @@ For instance given following environment variables:
 ```
 
 This will result in a pair of slack groups with the combined users:
-- `@team-platform-support` => combined list of all users in `abcd` and `efgh` schedules
+- `@platform-support-everyone` => combined list of all users in `abcd` and `efgh` schedules
 - `@platform-support` => combined list of current on call users in `abcd` and `efgh` schedules
 
 
