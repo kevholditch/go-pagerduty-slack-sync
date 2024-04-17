@@ -1,0 +1,13 @@
+version: '3.6'
+services:
+  pagerduty-slack-sync:
+    build:
+      context: ../..
+      dockerfile: build/package/Dockerfile
+    volumes:
+      - ../..:/opt/bitrise/pagerduty-slack-sync
+    environment:
+      RUN_INTERVAL_SECONDS: 60
+      SLACK_TOKEN: xxx
+      PAGERDUTY_TOKEN: xxx
+      SCHEDULE_WEBSITE: PDID123,website

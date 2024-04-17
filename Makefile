@@ -1,4 +1,4 @@
-
+DOCKER_COMPOSE_FILE=deployments/local/docker-compose.yaml
 TAG ?= $$(git describe --tags)
 
 build:
@@ -13,10 +13,13 @@ test:
 	@go test -v ./...
 
 docker-build:
-	@docker build -t kevholditch/pagerduty-slack-sync:${TAG} -f build/package/Dockerfile .
+	@docker build -t pagerduty-slack-sync:${TAG} -f build/package/Dockerfile .
 
 docker-publish:
 	@docker login
+
+dev:
+	@docker-compose -f $(DOCKER_COMPOSE_FILE) up --build pagerduty-slack-sync
 
 ci: build check test
 
