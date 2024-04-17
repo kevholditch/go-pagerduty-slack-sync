@@ -18,28 +18,28 @@ user3 <= currently on call
 Then when you run a sync for the schedule using:
 
 ```
-docker run -e RUN_INTERVAL_SECONDS=60 -e SLACK_TOKEN=xxx -e PAGERDUTY_TOKEN=xxx -e SCHEDULE_PLATFORM=1234,platform-engineer kevholditch/pagerduty-slack-sync:latest
+docker run -e RUN_INTERVAL_SECONDS=60 -e SLACK_TOKEN=xxx -e PAGERDUTY_TOKEN=xxx -e SCHEDULE_PLATFORM=1234,platform kevholditch/pagerduty-slack-sync:latest
 ```
 
 The following slack groups would be created:
 
-- `@all-oncall-platform-engineers` => `user1, user2, user3` 
-- `@current-oncall-platform-engineer` => `user3`
+- `@team-platform-support` => `user1, user2, user3` 
+- `@platform-support` => `user3`
     
 Multiple schedules can be synced at once by passing many env variables beginning with `SCHEDULE_`.  The format for the value that the schedule parameter expects is `<pagerduty schedule id>/<group-name>`.  The `<group name>` will be used to build the two names for the slack groups using the following format:
-    - `all-oncall-<group-name>s`
-    - `current-oncall-<group-name>`
+    - `team-<group-name>-support`
+    - `<group-name>-support`
 
 If there are multiple schedules with the same `<group-name>` are defined, then slack groups contains the combined list of all people for all the given schedules.
 
 For instance given following environment variables:
 ```
--e SCHEDULE_TEAM_1=abcd,platform-engineer -e SCHEDULE_TEAM_2=efgh,platform-engineer
+-e SCHEDULE_TEAM_1=abcd,platform -e SCHEDULE_TEAM_2=efgh,platform
 ```
 
 This will result in a pair of slack groups with the combined users:
-- `@all-oncall-platform-engineers` => combined list of all users in `abcd` and `efgh` schedules
-- `@current-oncall-platform-engineer` => combined list of current on call users in `abcd` and `efgh` schedules
+- `@team-platform-support` => combined list of all users in `abcd` and `efgh` schedules
+- `@platform-support` => combined list of current on call users in `abcd` and `efgh` schedules
 
 
 Full parameter list:
@@ -48,7 +48,7 @@ Full parameter list:
 |:-----------------------------|:----------------------------------------------------------------------------------|:---------------|:------------------------|
 | PAGERDUTY_TOKEN              | Token used to talk to the PagerDuty API                                           | n/a            | xxxxx                   |
 | SLACK_TOKEN                  | Token used to talk to Slack API                                                   | n/a            | xoxp-xxxxxx             |
-| SCHEDULE_<NAME>              | A PagerDuty schedule that you want to sync                                        | n/a            | 1234,platform-engineer  |
+| SCHEDULE_<NAME>              | A PagerDuty schedule that you want to sync                                        | n/a            | 1234,platform           |
 | RUN_INTERVAL_SECONDS         | Run a sync every X seconds                                                        | 60             | 300                     |
 | PAGERDUTY_SCHEDULE_LOOKAHEAD | How far into the future to evaluate Pagerduty schedules (Go time duration format) | 2400h          | 8760h                   |
 
