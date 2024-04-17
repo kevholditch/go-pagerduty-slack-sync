@@ -42,7 +42,7 @@ type Schedule struct {
 // PAGERDUTY_TOKEN - PagerDuty Token
 // SLACK_TOKEN - Slack Token
 // SCHEDULE_XXX="id,name" e.g. 1234,product-platform will generate a schedule with the following values
-// ScheduleID = "1234", AllOnCallGroupName = "product-platform-support-everyone", CurrentOnCallGroupName: "product-platform-support"
+// ScheduleID = "1234", AllOnCallGroupName = "product-platform-everyone", CurrentOnCallGroupName: "product-platform"
 func NewConfigFromEnv() (*Config, error) {
 	config := &Config{
 		PagerDutyToken:       os.Getenv(pagerDutyTokenKey),
@@ -82,8 +82,8 @@ func NewConfigFromEnv() (*Config, error) {
 }
 
 func appendSchedule(schedules []Schedule, scheduleID, teamName string) []Schedule {
-	currentGroupName := fmt.Sprintf("%s-support", teamName)
-	allGroupName := fmt.Sprintf("%s-support-everyone", teamName)
+	currentGroupName := fmt.Sprintf("%s", teamName)
+	allGroupName := fmt.Sprintf("%s-everyone", teamName)
 	newScheduleList := make([]Schedule, len(schedules))
 	updated := false
 
