@@ -1,4 +1,4 @@
-module github.com/kevholditch/go-pagerduty-slack-sync
+module github.com/bitrise-io/pagerduty-slack-sync
 
 go 1.21.5
 

@@ -6,7 +6,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kevholditch/go-pagerduty-slack-sync/internal/sync"
+	"github.com/bitrise-io/pagerduty-slack-sync/internal/sync"
 	"github.com/sirupsen/logrus"
 )
 
