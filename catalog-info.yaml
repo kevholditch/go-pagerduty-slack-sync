@@ -1,0 +1,16 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: pagerduty-slack-sync
+  description: PagerDuty Slack Sync - Automation that synchronizes Slack user groups with PagerDuty schedules
+  annotations:
+    gcp.bitrise.io/dev-project-id: ip-engineering-management-dev
+    gcp.bitrise.io/dev-service-account: pagerduty-slack-sync-sa@ip-engineering-management-dev.iam.gserviceaccount.com
+    gcp.bitrise.io/prod-project-id: ip-engineering-management-prod
+    gcp.bitrise.io/prod-service-account: pagerduty-slack-sync-sa@ip-engineering-management-prod.iam.gserviceaccount.com
+spec:
+  type: service
+  lifecycle: production
+  owner: engineering
+  system: engineering-management
