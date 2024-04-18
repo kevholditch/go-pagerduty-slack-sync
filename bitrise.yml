@@ -1,0 +1,215 @@
+---
+format_version: "11"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: other
+
+# If you want to use this bitrise.yml from the repository then make the switchover using this guide:
+# https://devcenter.bitrise.io/en/builds/configuring-build-settings/managing-an-app-s-bitrise-yml-file.html#storing-the-bitrise-yml-file-in-your-repository
+
+meta:
+  bitrise.io:
+    stack: linux-docker-android-20.04
+
+app:
+  envs:
+      # Github username to use to commit to the gitops deployment repository.
+    - GITHUB_USERNAME: $GITHUB_USERNAME
+      # Personal access token for Github to commit to the gitops deployment repository.
+    - DEPLOY_TOKEN: $DEPLOY_TOKEN
+    - GAR_PROJECT_PRODUCTION: ip-kubernetes-prod
+      # Base64 encoded credentials for pushing images to the production GAR repository.
+    - GAR_SERVICE_ACCOUNT_PRODUCTION_B64: $GAR_SERVICE_ACCOUNT_PRODUCTION_B64
+    - GAR_PROJECT_STAGING: ip-kubernetes-dev
+      # Base64 encoded credentials for pushing images to the staging GAR repository.
+    - GAR_SERVICE_ACCOUNT_STAGING_B64: $GAR_SERVICE_ACCOUNT_STAGING_B64
+    - GAR_HOST: us-central1-docker.pkg.dev
+    - GAR_REPOSITORY: engineering-management
+
+trigger_map:
+  - push_branch: 'master'
+    # TODO: change this to deploy-all when production environment is ready
+    workflow: deploy-staging
+  - pull_request_target_branch: 'master'
+    workflow: ci
+
+workflows:
+  ci:
+    before_run:
+      - _setup
+    steps:
+      - script:
+          title: Run lint checks
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -euxo pipefail
+                make lint
+      - script:
+          title: Run tests
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -euxo pipefail
+                make tests
+
+  deploy-staging:
+    before_run:
+      - _setup
+    after_run:
+      - _set_release_tag
+      - _build_images
+      - _set_git_creds
+      - _push_staging
+      - _deploy_staging
+
+  deploy-all:
+    before_run:
+      - _setup
+    after_run:
+      - _set_release_tag
+      - _build_images
+      - _set_git_creds
+      - _push_staging
+      - _deploy_staging
+      - _push_production
+      - _deploy_production
+
+  _setup:
+    before_run:
+      - _clone
+      - _upgrade_go
+
+  _clone:
+    steps:
+      - activate-ssh-key: {}
+      - git-clone: {}
+
+  _upgrade_go:
+    steps:
+      - script:
+          title: Upgrade go
+          inputs:
+          - content: |
+              #!/bin/bash
+              set -euxo pipefail
+
+              # upgrade go
+              rm -rf /usr/local/go && wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz && tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz
+              go version
+
+  _set_git_creds:
+    steps:
+      - set-git-credentials:
+          inputs:
+            - git_email_address: engineering@bitrise.io
+            - git_user_name: engineering
+
+  _set_release_tag:
+    steps:
+      - script:
+          title: get-release-tag
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -euxo pipefail
+
+                if [ -n "${BITRISE_GIT_TAG-}" ]; then
+                  RELEASE_TAG=$BITRISE_GIT_TAG
+                elif [ -n "${BITRISE_GIT_COMMIT-}" ]; then
+                  RELEASE_TAG=$BITRISE_GIT_COMMIT
+                else
+                  RELEASE_TAG=$BITRISE_BUILD_NUMBER # If this is a manual build with no git info
+                fi
+                envman add --key RELEASE_TAG --value ${RELEASE_TAG}
+
+                if [ -z "${BITRISE_GIT_MESSAGE-}" ]; then
+                  envman add --key BITRISE_GIT_MESSAGE --value "Deploying image $RELEASE_TAG"
+                fi
+
+  _build_images:
+    steps:
+      - script:
+          title: Build Docker Image
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -euxo pipefail
+                docker build \
+                --tag ${GAR_HOST}/${GAR_PROJECT_STAGING}/${GAR_REPOSITORY}/pagerduty-slack-sync:latest \
+                --tag ${GAR_HOST}/${GAR_PROJECT_STAGING}/${GAR_REPOSITORY}/pagerduty-slack-sync:${RELEASE_TAG} \
+                --tag ${GAR_HOST}/${GAR_PROJECT_PRODUCTION}/${GAR_REPOSITORY}/pagerduty-slack-sync:${RELEASE_TAG} .
+
+  _push_to_gar:
+    envs:
+      - GAR_SERVICE_ACCOUNT_B64: $GAR_SERVICE_ACCOUNT_B64
+      - GAR_PROJECT: $GAR_PROJECT
+    steps:
+      - script:
+          title: Authenticate to GCP
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -euxo pipefail
+                KEY_FILE_PATH=$(mktemp -d)/keyfile.json
+                echo "${GAR_SERVICE_ACCOUNT_B64}" | base64 --decode > ${KEY_FILE_PATH}
+                gcloud auth activate-service-account --key-file=${KEY_FILE_PATH}
+                gcloud auth configure-docker ${GAR_HOST}
+      - script:
+          title: Tag and push Docker image
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -euxo pipefail
+                docker push ${GAR_HOST}/${GAR_PROJECT}/${GAR_REPOSITORY}/pagerduty-slack-sync:${RELEASE_TAG}
+
+  _push_staging:
+    envs:
+      - GAR_SERVICE_ACCOUNT_B64: $GAR_SERVICE_ACCOUNT_STAGING_B64
+      - GAR_PROJECT: $GAR_PROJECT_STAGING
+    after_run:
+      - _push_to_gar
+
+  _push_production:
+    envs:
+      - GAR_SERVICE_ACCOUNT_B64: $GAR_SERVICE_ACCOUNT_PRODUCTION_B64
+      - GAR_PROJECT: $GAR_PROJECT_PRODUCTION
+    after_run:
+      - _push_to_gar
+
+  _gitops_deploy:
+    envs:
+      - GAR_PROJECT: $GAR_PROJECT
+      - DEPLOY_BRANCH: $DEPLOY_BRANCH
+      - SHOULD_CREATE_PULL_REQUEST: $SHOULD_CREATE_PULL_REQUEST
+    steps:
+      - update-gitops-repository@1:
+          title: Update deployment configuration of pagerduty-slack-sync
+          inputs:
+            - templates_folder_path: deployments/helm
+            - deploy_repository_url: https://github.com/bitrise-io/engineering-management-deployments.git
+            - deploy_user: ${GITHUB_USERNAME}
+            - deploy_branch: $DEPLOY_BRANCH
+            - deploy_path: pagerduty-slack-sync
+            - pull_request: $SHOULD_CREATE_PULL_REQUEST
+            - pull_request_title: "pagerduty-slack-sync - ${BITRISE_GIT_MESSAGE}"
+            - pull_request_body: "${BITRISE_BUILD_URL}"
+            - commit_message: $BITRISE_GIT_MESSAGE
+            - values: |
+                repository: ${GAR_HOST}/${GAR_PROJECT}/${GAR_REPOSITORY}/pagerduty-slack-sync
+                tag: ${RELEASE_TAG}
+
+  _deploy_staging:
+    envs:
+      - GAR_PROJECT: $GAR_PROJECT_STAGING
+      - DEPLOY_BRANCH: staging
+      - SHOULD_CREATE_PULL_REQUEST: false
+    after_run:
+      - _gitops_deploy
+
+  _deploy_production:
+    envs:
+      - GAR_PROJECT: $GAR_PROJECT_PRODUCTION
+      - DEPLOY_BRANCH: production
+      - SHOULD_CREATE_PULL_REQUEST: true
+    after_run:
+      - _gitops_deploy
