@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -22,6 +23,15 @@ func main() {
 		os.Exit(-1)
 		return
 	}
+
+	// Start the health check endpoint and make sure not to block
+	go func() {
+		_ = http.ListenAndServe(":8080", http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				_, _ = w.Write([]byte("ok"))
+			},
+		))
+	}()
 
 	logrus.Infof("starting, going to sync %d schedules", len(config.Schedules))
 

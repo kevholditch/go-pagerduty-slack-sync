@@ -11,3 +11,5 @@ services:
       SLACK_TOKEN: xxx
       PAGERDUTY_TOKEN: xxx
       SCHEDULE_WEBSITE: PDID123,website
+    ports:
+    - "8080:8080"
