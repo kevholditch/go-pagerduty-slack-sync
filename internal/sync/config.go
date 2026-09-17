@@ -81,9 +81,17 @@ func NewConfigFromEnv() (*Config, error) {
 	return config, nil
 }
 
+func allOnCallGroupName(teamName string) string {
+	if strings.HasSuffix(teamName, "s") {
+		return fmt.Sprintf("all-oncall-%s", teamName)
+	}
+
+	return fmt.Sprintf("all-oncall-%ss", teamName)
+}
+
 func appendSchedule(schedules []Schedule, scheduleID, teamName string) []Schedule {
 	currentGroupName := fmt.Sprintf("current-oncall-%s", teamName)
-	allGroupName := fmt.Sprintf("all-oncall-%ss", teamName)
+	allGroupName := allOnCallGroupName(teamName)
 	newScheduleList := make([]Schedule, len(schedules))
 	updated := false
 

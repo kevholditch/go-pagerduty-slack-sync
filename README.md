@@ -26,8 +26,8 @@ The following slack groups would be created:
 - `@all-oncall-platform-engineers` => `user1, user2, user3` 
 - `@current-oncall-platform-engineer` => `user3`
     
-Multiple schedules can be synced at once by passing many env variables beginning with `SCHEDULE_`.  The format for the value that the schedule parameter expects is `<pagerduty schedule id>/<group-name>`.  The `<group name>` will be used to build the two names for the slack groups using the following format:
-    - `all-oncall-<group-name>s`
+Multiple schedules can be synced at once by passing many env variables beginning with `SCHEDULE_`.  The format for the value that the schedule parameter expects is `<pagerduty schedule id>,<group-name>`.  The `<group name>` will be used to build the two names for the slack groups using the following format:
+    - `all-oncall-<group-name>s` (if `<group-name>` already ends with `s`, no extra `s` is appended)
     - `current-oncall-<group-name>`
 
 If there are multiple schedules with the same `<group-name>` are defined, then slack groups contains the combined list of all people for all the given schedules.
