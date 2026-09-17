@@ -146,6 +146,19 @@ func Test_NewConfigFromEnv_NoSchedulesDefined(t *testing.T) {
 	assert.Nil(t, config)
 }
 
+func Test_NewConfigFromEnv_PluralTeamName(t *testing.T) {
+	defer SetEnv("SCHEDULE_EXAMPLE", "abcd1234,platform-operations")()
+	defer SetEnv("PAGERDUTY_TOKEN", "token1")()
+	defer SetEnv("SLACK_TOKEN", "secretToken1")()
+
+	config, err := NewConfigFromEnv()
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(config.Schedules))
+	assert.Equal(t, "all-oncall-platform-operations", config.Schedules[0].AllOnCallGroupName)
+	assert.Equal(t, "current-oncall-platform-operations", config.Schedules[0].CurrentOnCallGroupName)
+}
+
 func Test_NewConfigFromEnv_InvalidScheduleData(t *testing.T) {
 	defer SetEnv("SCHEDULE_PLATFORM", "foo,bar,buzz")()
 
