@@ -1,5 +1,5 @@
-# Use the latest available Go 1.21 image
-FROM golang:1.21 as builder
+# Keep the builder version aligned with go.mod.
+FROM golang:1.27.1 AS builder
 COPY . /go-pagerduty-slack-sync
 WORKDIR /go-pagerduty-slack-sync
 ENV GO111MODULE=on
